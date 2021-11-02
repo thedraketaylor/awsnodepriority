@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Test cloudformation template
+Resources:
+  Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt RootRole.Arn
+      Runtime: nodejs14.x
+      Code:
+        ZipFile: >
+          const aws = require('aws-sdk');
+          const response = require('cfn-response');
+          const min = 10;
+          const max = 100;
+          
+          exports.handler = (event, context) => {
+            if (event.RequestType === 'Create') {
+              let priority = Math.floor(Math.random() * (max - min + 1) + min);
+              response.send(event, context, response.SUCCESS, {"id": priority})
+            }
+            else {
+                response.send(event, context, response.SUCCESS)
+            }
+          }
+
+  RootRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+
